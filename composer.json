@@ -1,0 +1,6 @@
+{
+    "name": "CrossJobPublisher",
+    "require": {
+        "Zend/Soap" 
+    }
+}
