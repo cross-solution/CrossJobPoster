@@ -1,6 +1,18 @@
 {
     "name": "CrossJobPublisher",
+"repositories": [
+            {
+                "type": "package",
+                "package": {
+                    "name": "Zend/Soap",
+                    "version": "dev-master",
+                    "source": {
+                        "url": "https://github.com/zendframework/zf2/tree/master/library/Zend/Soap",
+                        "type": "git" 
+                    }
+                }
+            }],
     "require": {
-        "Zend/Soap": "*" 
-    }
+        "Zend/Soap": "dev-master" 
+   }
 }
