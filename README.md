@@ -9,10 +9,10 @@ PHP implementation of various interfaces to post job offers to jobportals like c
 References
 
 
-[hr-xml.org](http://hr-xml.org "HR-XML")
-[Dokumentation Career](http://dpi.careerbuilder.com/Site/Index.aspx "Careerbuilder Specs")
-[Dokumentation Monster](http://doc.monster.com/ "Monster Specs")
-FAZjob.NET - to be written
+* [hr-xml.org](http://hr-xml.org "HR-XML")
+* [Dokumentation Career](http://dpi.careerbuilder.com/Site/Index.aspx "Careerbuilder Specs")
+* [Dokumentation Monster](http://doc.monster.com/ "Monster Specs")
+* FAZjob.NET - to be written
 
 Component Requirements, Constraints, and Acceptance Criteria
 ------------------------------------------------------------
