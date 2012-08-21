@@ -1,18 +1,21 @@
 CrossJobPoster
 ==============
 
- Overview
+Overview
+--------
 
+PHP implementation of various interfaces to post job offers to jobportals like careerbuilder, monster or FAZjob.NET
 
-Protokoll zur Übertragung von Arbeitsplatzangeboten
 References
 
 
-hr-xml.org
-Dokumentation Career
-Dokumentation Monster
-Component Requirements, Constraints, and Acceptance Criteria
+[hr-xml.org](http://hr-xml.org "HR-XML")
+[Dokumentation Career](http://dpi.careerbuilder.com/Site/Index.aspx "Careerbuilder Specs")
+[Dokumentation Monster](http://doc.monster.com/ "Monster Specs")
+FAZjob.NET - to be written
 
+Component Requirements, Constraints, and Acceptance Criteria
+------------------------------------------------------------
 zu berücksichtigen:
 
         es gibt sehr unterschiedliche Formen von Übertragungswegen: Soap, Mails, FTP
