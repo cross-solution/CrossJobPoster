@@ -1,6 +1,11 @@
 CrossJobPoster
 ==============
 
+Status
+------
+
+pre-alpha
+
 Overview
 --------
 
