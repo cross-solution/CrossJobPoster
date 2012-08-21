@@ -75,7 +75,7 @@ Verwendung im Controller:
         die Daten-Klasse hat einige Standart-Methoden, ermöglicht aber auch eigene XML-Strukturen einzugeben und abzuspeichern (die Frage wäre hier, ob Strukturen dynamisch gebildet werden können, zB die Stelle, an der die JobInfo eingehängt werden kann)
         der Befehl für die Operation wird eingegeben und ausgeführt.
 
-
+```php
       $op = new ExportJob_Careerbuilder();
       $op->setContactinfo(array(...));
  
@@ -95,6 +95,7 @@ Verwendung im Controller:
      $op->processHRXMLNew();
  
      $info = $op->getResponse();
+```
  
  
 
