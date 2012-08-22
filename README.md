@@ -48,7 +48,6 @@ Die Operationen lassen sich auf drei Ebenen aufteilen
 - Daten - hier werden die spezifischen Datenstrukturen umgesetzt
 - Datengewinnung - eine Schnittstelle zu der Datengewinnung der Anwendung
 
-
 Es soll eine Basis-Struktur für Daten und für Datenoperationen geben.
 Grundsätzlich ist davon auszugehen, daß alle Informationen für alle Schnittstellen sich in dieser Struktur bis in eine gewisse Auflösung unterbringen lassen.
 So wird es zB immer Kontaktinformationen zu einer Firma geben, und da wird es fast immer einen Ansprechpartner mit Telefonnummer geben.
@@ -61,23 +60,24 @@ schön wäre hier, daß die Parameter einer Schnittstelle für eine andere Schni
 Milestones / Tasks
 
 
-...
-Class Index
+
+### Class Index
 
 Schnittstelle (Export)
 
     Verbindungsinformationen setzen *
 
 Daten
-Use Cases
+
+###Use Cases
 
 
-Verwendung im Controller:
+#### Verwendung im Controller:
 
-        spezifische Schnittstellenklasse aufrufen
-        Kontaktinfos sind die Informationen, die zum Verbindungsaufbau benötigt werden.
-        die Daten-Klasse hat einige Standart-Methoden, ermöglicht aber auch eigene XML-Strukturen einzugeben und abzuspeichern (die Frage wäre hier, ob Strukturen dynamisch gebildet werden können, zB die Stelle, an der die JobInfo eingehängt werden kann)
-        der Befehl für die Operation wird eingegeben und ausgeführt.
+* spezifische Schnittstellenklasse aufrufen
+* Kontaktinfos sind die Informationen, die zum Verbindungsaufbau benötigt werden.
+* die Daten-Klasse hat einige Standart-Methoden, ermöglicht aber auch eigene XML-Strukturen einzugeben und abzuspeichern (die Frage wäre hier, ob Strukturen dynamisch gebildet werden können, zB die Stelle, an der die JobInfo eingehängt werden kann)
+* der Befehl für die Operation wird eingegeben und ausgeführt.
 
 ```php
       $op = new ExportJob_Careerbuilder();
@@ -101,10 +101,9 @@ Verwendung im Controller:
      $info = $op->getResponse();
 ```
  
- 
+#### Klasse zur Datenverwaltung:
 
-Klasse zur Datenverwaltung:
-
+```php
       class Model_Jobs extends Model_myParentClass implements HumanResourceData_Interface
       {
           public function setJobTitle($title) {
@@ -118,7 +117,7 @@ Klasse zur Datenverwaltung:
              return $jobBasis;
          }
      }
- 
+ ```
 
 Class Skeletons
 
