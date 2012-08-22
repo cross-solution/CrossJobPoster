@@ -80,6 +80,7 @@ Daten
 * der Befehl für die Operation wird eingegeben und ausgeführt.
 
 ```php
+<?php
       $op = new ExportJob_Careerbuilder();
       $op->setContactinfo(array(...));
  
