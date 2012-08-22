@@ -2,6 +2,8 @@
 INSTALL.txt
 LICENSE.txt
 README.txt
+composer.lock
 demos/
+vendor/
 extras/documentation
 
