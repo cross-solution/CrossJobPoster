@@ -1,17 +1,14 @@
-CrossJobPoster
-==============
+### CrossJobPoster
 
-Status
-------
+## Status
 
-pre-alpha
+*pre-alpha*
 
-Overview
---------
+## Overview
 
 PHP implementation of various interfaces to post job offers to jobportals like careerbuilder, monster or FAZjob.NET
 
-References
+##References
 
 
 * [hr-xml.org](http://hr-xml.org "HR-XML")
@@ -19,38 +16,37 @@ References
 * [Dokumentation Monster](http://doc.monster.com/ "Monster Specs")
 * FAZjob.NET - to be written
 
-Component Requirements, Constraints, and Acceptance Criteria
-------------------------------------------------------------
-zu berücksichtigen:
+## Component Requirements, Constraints, and Acceptance Criteria
 
-        es gibt sehr unterschiedliche Formen von Übertragungswegen: Soap, Mails, FTP
-        die Übertragungsprotokolle können auch sehr unterschiedlich sein: XML, HRXML in verschiedenen Versionen, CSV
-        ein Übertragungsweg kann mehrstufig sein, zB ein neuer Job bei Career wird in eine Bearbeitungsqueue gesetzt, ist die Bearbeitung erfolgreich, wird zeitlich versetzt ein Success-Status zurückgegeben.
-        Sofort zurückgegeben wird nur ein Bearbeitungsstatus 'inQueue' und eine Bearbeitungsnummer
-        einzelne Schnittstellen bieten (werden vermutlich) sehr unterschiedliche Vorgehensweisen für eine ähnliche Aufgabe anbieten
-        viele Protokolle halten sich grob an einen Standart, aber unterscheiden sich in Details und in der Notwendigkeit der Daten (pflicht, optional, nicht verwendet).
-        manche Daten haben eine schnittstellenbezogene Kodierung (zB Career für Abitur=DR3211), diese Kodierung kann abhängig sein von den Ländern.
+### zu berücksichtigen:
 
+- es gibt sehr unterschiedliche Formen von Übertragungswegen: Soap, Mails, FTP
+- die Übertragungsprotokolle können auch sehr unterschiedlich sein: XML, HRXML in verschiedenen Versionen, CSV
+- ein Übertragungsweg kann mehrstufig sein, zB ein neuer Job bei Career wird in eine Bearbeitungsqueue gesetzt, ist die Bearbeitung erfolgreich, wird zeitlich versetzt ein Success-Status zurückgegeben.
+- Sofort zurückgegeben wird nur ein Bearbeitungsstatus 'inQueue' und eine Bearbeitungsnummer
+- einzelne Schnittstellen bieten (werden vermutlich) sehr unterschiedliche Vorgehensweisen für eine ähnliche Aufgabe anbieten
+- viele Protokolle halten sich grob an einen Standart, aber unterscheiden sich in Details und in der Notwendigkeit der Daten (pflicht, optional, nicht verwendet).
+- manche Daten haben eine schnittstellenbezogene Kodierung (zB Career für Abitur=DR3211), diese Kodierung kann abhängig sein von den Ländern.
 
-Das Program soll können:
+### Das Program soll können:
 
-        Unterschiedliche Übertragungswege realisieren
-        Mehrstufige Prozesse beherrschen
-        Unterschiedliche Protokolle
-        offenes Datensystem, d.h. es können beliebig spezielle Daten hinzugeschrieben werden, verwendet werden sollen jedoch nur die Daten, die für die jeweilige Schnittstelle notwendig sind
-        schnittstellenspezifische Datendarstellung (zB für Abitur für Career oder Monster)
+- Unterschiedliche Übertragungswege realisieren
+- Mehrstufige Prozesse beherrschen
+- Unterschiedliche Protokolle
+- offenes Datensystem, d.h. es können beliebig spezielle Daten hinzugeschrieben werden, verwendet werden sollen jedoch nur die Daten, die für die jeweilige Schnittstelle notwendig sind
+- schnittstellenspezifische Datendarstellung (zB für Abitur für Career oder Monster)
 
-Dependencies on Other Framework Components
+### Dependencies on Other Framework Components
 
-        Zend_Soap_Client
+- Zend_Soap_Client
 
-    Theory of Operation
+### Theory of Operation
 
 Die Operationen lassen sich auf drei Ebenen aufteilen
 
-        Anwendung - hier werden die verschiedenen Protokolle der Schnittstelle umgesetzt
-        Daten - hier werden die spezifischen Datenstrukturen umgesetzt
-        Datengewinnung - eine Schnittstelle zu der Datengewinnung der Anwendung
+- Anwendung - hier werden die verschiedenen Protokolle der Schnittstelle umgesetzt
+- Daten - hier werden die spezifischen Datenstrukturen umgesetzt
+- Datengewinnung - eine Schnittstelle zu der Datengewinnung der Anwendung
 
 
 Es soll eine Basis-Struktur für Daten und für Datenoperationen geben.
