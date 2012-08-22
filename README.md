@@ -72,6 +72,41 @@ Daten
 ###Use Cases
 
 
+#### Creating a Posterclass
+
+The posterclass accomplish following tasks
+- assembling a distributable coding from the job data (eg XML)
+- etablish a protocol (eg SOAP) 
+
+The assembling of joboffers are mostly following a common standard, for example [HRXML](http://www.hr-xml.org) in the version 2.4. 
+So if we want to establish a posting-class for joboffers, we just to implement the divergences from the standart.
+For HRXML24 you can rely on, that the the top-node of the XML will always be 'PositionOpening' with subsequent sub-nodes for 'PositionRecordInfo', 'PositionPosting', 'PositionProfile' and 'UserArea'.
+And 'PositionPosting' will usually have a specified set of subnodes, some of them mandatory, some of them optional or even dispensable.
+All these nodes have an own method, which will be implement in the parentclass according to the standards, and can be overwritten by the subclass to implement divergences.
+In the end we can get back a ready-for-distribution code.
+
+But we also place the distributing process into this class. Usually you expect to finally post a job-offer, and if you do this in e.g. in SOAP, you will have a WSDL with a method for this.
+In the derived class you can compose such a posting-method and unburden the user to understand the different methods of all the job-portals.
+Which does not implies you can't call this methods directly, maybe there are some methods in the API of the portal, which are relevant to your application.
+So the derived class implements all the methods of the API plus some standards methods you expect all portals will have.
+
+```php
+<?php
+class JobPoster_Careerbuilder extends JobPoster_HRXML24
+{
+	// the node 'HowToApply' is a subnode of 'positionprofile'
+	// in the standard it includes several subnodes, but we just want to include
+	// the recruiter and the method of application
+ 	protected function _xmlHowToApply() {
+        	$node = $this->createElement('HowToApply');
+        	$node->appendChild($this->_xmlApplyPersonName());
+        	$node->appendChild($this->_xmlApplicationMethod());
+        	return $node;
+    	}
+
+}
+```
+
 #### Verwendung im Controller:
 
 * spezifische Schnittstellenklasse aufrufen
@@ -81,15 +116,16 @@ Daten
 
 ```php
 <?php
-      $op = new ExportJob_Careerbuilder();
-      $op->setContactinfo(array(...));
+
+     $op = new JobPoster_Careerbuilder();
+     $op->setContactinfo(array(...));
  
-      $data = new Model_Jobs();
-      $data->setId(234);
-      $data->setJobtitle('Zend-Programmierer');
-      $data->setLocationTown('Frankfurt');
+     $data = new Model_Jobs();
+     $data->setId(234);
+     $data->setJobtitle('Zend-Programmierer');
+     $data->setLocationTown('Frankfurt');
  
-      $data->setRecruiterName('Jenny Recruiter');
+     $data->setRecruiterName('Jenny Recruiter');
      $data->setRecruiterPhone('0123-4567890');
      $data->setRecruiterEmail('JRecruiter@gotche.de');
  
@@ -105,6 +141,7 @@ Daten
 #### Klasse zur Datenverwaltung:
 
 ```php
+<?php
       class Model_Jobs extends Model_myParentClass implements HumanResourceData_Interface
       {
           public function setJobTitle($title) {
