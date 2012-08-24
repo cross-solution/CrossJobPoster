@@ -10,7 +10,6 @@ PHP implementation of various interfaces to post job offers to jobportals like c
 
 ##References
 
-
 * [hr-xml.org](http://hr-xml.org "HR-XML")
 * [Dokumentation Career](http://dpi.careerbuilder.com/Site/Index.aspx "Careerbuilder Specs")
 * [Dokumentation Monster](http://doc.monster.com/ "Monster Specs")
@@ -18,107 +17,72 @@ PHP implementation of various interfaces to post job offers to jobportals like c
 
 ## Component Requirements, Constraints, and Acceptance Criteria
 
-### zu berücksichtigen:
+### to regard:
 
-- es gibt sehr unterschiedliche Formen von Übertragungswegen: Soap, Mails, FTP
-- die Übertragungsprotokolle können auch sehr unterschiedlich sein: XML, HRXML in verschiedenen Versionen, CSV
-- ein Übertragungsweg kann mehrstufig sein, zB ein neuer Job bei Career wird in eine Bearbeitungsqueue gesetzt, ist die Bearbeitung erfolgreich, wird zeitlich versetzt ein Success-Status zurückgegeben.
-- Sofort zurückgegeben wird nur ein Bearbeitungsstatus 'inQueue' und eine Bearbeitungsnummer
-- einzelne Schnittstellen bieten (werden vermutlich) sehr unterschiedliche Vorgehensweisen für eine ähnliche Aufgabe anbieten
-- viele Protokolle halten sich grob an einen Standart, aber unterscheiden sich in Details und in der Notwendigkeit der Daten (pflicht, optional, nicht verwendet).
-- manche Daten haben eine schnittstellenbezogene Kodierung (zB Career für Abitur=DR3211), diese Kodierung kann abhängig sein von den Ländern.
+- there are various kinds of protocols: Soap, Mails, FTP
+- the internal structure of the protocols can vary: XML, HRXML in different versions, CSV
+- one task can have several measures of transfering information, all with their own protocol, eg. a new job for "CareerBuilder" is stored in a queue and marked as "in progress", and just after a certain time it changes status to "success".
+- different portals do vary on the implementation of very similar accomplishments
+- some protocols diverge just slightly from some standards, or have an own coding for classification (industry-type, kind of employment).
 
-### Das Program soll können:
+### capabilities:
 
-- Unterschiedliche Übertragungswege realisieren
-- Mehrstufige Prozesse beherrschen
-- Unterschiedliche Protokolle
-- offenes Datensystem, d.h. es können beliebig spezielle Daten hinzugeschrieben werden, verwendet werden sollen jedoch nur die Daten, die für die jeweilige Schnittstelle notwendig sind
-- schnittstellenspezifische Datendarstellung (zB für Abitur für Career oder Monster)
+- implement different datastructures
+- support protocols with multiple transfers
+- open system, ie the dataclass can take care of additional data, the posterclass can apply addional method, which are specific to a portal
+- portalspecific encoding for data (ie industry-type)
 
-### Dependencies on Other Framework Components
+### Dependencies on Other Components
 
 - Zend_Soap_Client
+- libxml
+- expat-library
 
 ### Theory of Operation
 
-Die Operationen lassen sich auf drei Ebenen aufteilen
+the operation can by classified as
 
-- Anwendung - hier werden die verschiedenen Protokolle der Schnittstelle umgesetzt
-- Daten - hier werden die spezifischen Datenstrukturen umgesetzt
-- Datengewinnung - eine Schnittstelle zu der Datengewinnung der Anwendung
-
-Es soll eine Basis-Struktur für Daten und für Datenoperationen geben.
-Grundsätzlich ist davon auszugehen, daß alle Informationen für alle Schnittstellen sich in dieser Struktur bis in eine gewisse Auflösung unterbringen lassen.
-So wird es zB immer Kontaktinformationen zu einer Firma geben, und da wird es fast immer einen Ansprechpartner mit Telefonnummer geben.
-Es werden aber auch einige Informationen spezifisch für eine Schnittstelle sein, zB Anfahrtsweg (nicht bei Monster aber bei Career) oder die Sichtbarkeit von Angaben (bei Monster aber nicht bei Career).
-Diese Struktur entspricht einem Baum - ist wichtig weil nur so kann sie als XML oder serialize abgespeichert werden, was wiederum ermöglicht, beliebige spezifische Daten einzubinden
-
-Ebenso werden einige Standart-Aufgaben immer wieder auftreten (zB CRUD und Anmeldung/Authentifizierung)
-Die Standartaufgaben sollen mit Basisparametern immer laufen, darüber hinaus können schnittstellenspezifische Parameter übergeben werden.
-schön wäre hier, daß die Parameter einer Schnittstelle für eine andere Schnittstelle keine Wirkung hätten - so daß die Verwendung von einer Schnittstelle direkt auf eine andere Schnittstelle sich übertragen lässt.
-Milestones / Tasks
-
-
-
-### Class Index
-
-Schnittstelle (Export)
-
-    Verbindungsinformationen setzen *
-
-Daten
-
-###Use Cases
-
-
-#### Creating a Posterclass
+- storing information
+- retrieving/completing information
+- posting
 
 The posterclass accomplish following tasks
 - assembling a distributable coding from the job data (eg XML)
+- transform the data to the structure, which is needed for the client
 - etablish a protocol (eg SOAP) 
 
-The assembling of joboffers are mostly following a common standard, for example [HRXML](http://www.hr-xml.org) in the version 2.4. 
-So if we want to establish a posting-class for joboffers, we just to implement the divergences from the standart.
-For HRXML24 you can rely on, that the the top-node of the XML will always be 'PositionOpening' with subsequent sub-nodes for 'PositionRecordInfo', 'PositionPosting', 'PositionProfile' and 'UserArea'.
-And 'PositionPosting' will usually have a specified set of subnodes, some of them mandatory, some of them optional or even dispensable.
-All these nodes have an own method, which will be implement in the parentclass according to the standards, and can be overwritten by the subclass to implement divergences.
-In the end we can get back a ready-for-distribution code.
+The intention is, to use one data-scheme for all portals and a common transformation standard for assembling the specific portal.
+For data-storage we use a class with as less conditions as possible. Since we want to be able to connect this class with a database,
+this class may contain a lot of getters, which are able to fetch the approbate values from the database and return them for the initial establishment of a common data object.
+In implementation this would deduce, that we write a derived class, and overwrite those getter, to establish an access to our database.
 
-But we also place the distributing process into this class. Usually you expect to finally post a job-offer, and if you do this in e.g. in SOAP, you will have a WSDL with a method for this.
-In the derived class you can compose such a posting-method and unburden the user to understand the different methods of all the job-portals.
-Which does not implies you can't call this methods directly, maybe there are some methods in the API of the portal, which are relevant to your application.
-So the derived class implements all the methods of the API plus some standards methods you expect all portals will have.
+For transformation we have chosen XSL for the reason:
+* it's powerful
+* we don't have to write code for every distinct portal (except XSL)
+* we can handle large data
 
-```php
-<?php
-class JobPoster_Careerbuilder extends JobPoster_HRXML24
-{
-	// the node 'HowToApply' is a subnode of 'positionprofile'
-	// in the standard it includes several subnodes, but we just want to include
-	// the recruiter and the method of application
- 	protected function _xmlHowToApply() {
-        	$node = $this->createElement('HowToApply');
-        	$node->appendChild($this->_xmlApplyPersonName());
-        	$node->appendChild($this->_xmlApplicationMethod());
-        	return $node;
-    	}
+### Class Index
 
-}
-```
+* Poster-Class (Export)
+* Data-Class
 
-#### Verwendung im Controller:
+### Use Cases
 
-* spezifische Schnittstellenklasse aufrufen
-* Kontaktinfos sind die Informationen, die zum Verbindungsaufbau benötigt werden.
-* die Daten-Klasse hat einige Standart-Methoden, ermöglicht aber auch eigene XML-Strukturen einzugeben und abzuspeichern (die Frage wäre hier, ob Strukturen dynamisch gebildet werden können, zB die Stelle, an der die JobInfo eingehängt werden kann)
-* der Befehl für die Operation wird eingegeben und ausgeführt.
+#### Usage in the Controller:
+
+* call a poster-class
+* specify the connection-data (eq username, password) for the jobportal
+* set the transformation-protocol
+* call the data-class, which is specified to the Posterclass
+* fill the data-class with information
+* call the method in the poster-class, which will trigger the posting-process
 
 ```php
 <?php
 
-     $op = new JobPoster_Careerbuilder();
-     $op->setContactinfo(array(...));
+     $op = new JobPoster();
+     $op->setContactinfo(array('username' => 'carl jobposter', 'password' => 'go123'));
+     $op->setProtocol('Careerbuilder');
  
      $data = new Model_Jobs();
      $data->setId(234);
@@ -129,34 +93,45 @@ class JobPoster_Careerbuilder extends JobPoster_HRXML24
      $data->setRecruiterPhone('0123-4567890');
      $data->setRecruiterEmail('JRecruiter@gotche.de');
  
-     $data->setRecruiterAddress('<Location><Street>...</Street></Location>');
- 
      $op->setData($data);
  
+     // the following command is determined by the API of the portal
      $op->processHRXMLNew();
  
+     // the following command is determined by the API of the portal
      $info = $op->getResponse();
 ```
  
-#### Klasse zur Datenverwaltung:
+#### class for preserving data:
+
+* basically this class is a container for all the data needed in the poster-protocol
+* what is really needed are just the getter-method, because they will provide an interface for all the data, which is used in the poster-class
+* the intention is to write own classes, which implements the getter-methods directly from the database
 
 ```php
 <?php
-      class Model_Jobs extends Model_myParentClass implements HumanResourceData_Interface
-      {
-          public function setJobTitle($title) {
-              $jobInfo = $this->getJobInfo();
-              $jobInfo->addNode('title', $title);
-          }
+     class MyModelBase_Jobs extends HumanResourceData24_Abstract implements HumanResourceData24_Interface
+     {
+         public function setJobTitle($title) {
+              $this->setData('jobtitle', $title);
+         }
 
          public function getJobInfo() {
-             $jobBasis = $this->getJobBasis();
-             $jobBasis->addNode('JobInfo');
-             return $jobBasis;
+             return $this->getData('jobinfo');
          }
+
+	// the following method is inherited and provides a standarized datascheme
+	public function getXML() {
+		$data = new StdClass;
+		// this getter either provides stored data, 
+		// or fetch data from a database.
+		// in the second case you can expect this method coming from a derived class
+		$data->PositionTitle = $this->getPositionTitle();
+		xmlString = wddx_serialize_vars("job");
+	}
      }
  ```
 
-Class Skeletons
+### Class Skeletons
 
-Übersicht aller Klassen
+The structure for the data-class is designed by the getter-methods, ie unless we use magics, every information for a job-offer has an own getter to provide these information.
