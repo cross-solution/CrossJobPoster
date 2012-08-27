@@ -52,8 +52,7 @@ The posterclass accomplish following tasks
 - etablish a protocol (eg SOAP) 
 
 The intention is, to use one data-scheme for all portals and a common transformation standard for assembling the specific portal.
-For data-storage we use a class with as less conditions as possible. Since we want to be able to connect this class with a database,
-this class may contain a lot of getters, which are able to fetch the approbate values from the database and return them for the initial establishment of a common data object.
+For data-storage we use a class with as less conditions as possible. 
 In implementation this would deduce, that we write a derived class, and overwrite those getter, to establish an access to our database.
 
 For transformation we have chosen XSL for the reason:
@@ -80,9 +79,8 @@ For transformation we have chosen XSL for the reason:
 ```php
 <?php
 
-     $op = new JobPoster();
+     $op = new JobPoster_CareerBuilder();
      $op->setContactinfo(array('username' => 'carl jobposter', 'password' => 'go123'));
-     $op->setProtocol('Careerbuilder');
  
      $data = new Model_Jobs();
      $data->setId(234);
