@@ -17,20 +17,9 @@ PHP implementation of various interfaces to post job offers to jobportals like c
 
 ## Component Requirements, Constraints, and Acceptance Criteria
 
-### to regard:
-
-- there are various kinds of protocols: Soap, Mails, FTP
-- the internal structure of the protocols can vary: XML, HRXML in different versions, CSV
-- one task can have several measures of transfering information, all with their own protocol, eg. a new job for "CareerBuilder" is stored in a queue and marked as "in progress", and just after a certain time it changes status to "success".
-- different portals do vary on the implementation of very similar accomplishments
-- some protocols diverge just slightly from some standards, or have an own coding for classification (industry-type, kind of employment).
-
-### capabilities:
-
-- implement different datastructures
-- support protocols with multiple transfers
-- open system, ie the dataclass can take care of additional data, the posterclass can apply addional method, which are specific to a portal
-- portalspecific encoding for data (ie industry-type)
+- This must support various kinds of protocols: Soap, Mails, FTP
+- Thus must be able to assemble varying internal structure of the protocols (like HRXML for different portals)
+- This may support multi-layer protocols
 
 ### Dependencies on Other Components
 
@@ -40,30 +29,17 @@ PHP implementation of various interfaces to post job offers to jobportals like c
 
 ### Theory of Operation
 
-the operation can by classified as
-
-- storing information
-- retrieving/completing information
-- posting
-
-The posterclass accomplish following tasks
-- assembling a distributable coding from the job data (eg XML)
-- transform the data to the structure, which is needed for the client
-- etablish a protocol (eg SOAP) 
-
-The intention is, to use one data-scheme for all portals and a common transformation standard for assembling the specific portal.
-For data-storage we use a class with as less conditions as possible. 
-In implementation this would deduce, that we write a derived class, and overwrite those getter, to establish an access to our database.
-
-For transformation we have chosen XSL for the reason:
-* it's powerful
-* we don't have to write code for every distinct portal (except XSL)
-* we can handle large data
+A data-object should contain all the information about a job.
+The data-object get assigned to a class for transforming the data for Transfer to a portal.
 
 ### Class Index
 
-* Poster-Class (Export)
-* Data-Class
+* Cross_JobPoster_CareerBuilder
+* Cross_JobPoster_Monster
+* Cross_JobPoster_Abstract
+* Cross_JobPoster_Data_Hrxml
+* Cross_JobPoster_Data_Abstract
+* Cross_JobPoster_Data_Interface
 
 ### Use Cases
 
@@ -79,17 +55,18 @@ For transformation we have chosen XSL for the reason:
 ```php
 <?php
 
-     $op = new JobPoster_CareerBuilder();
-     $op->setContactinfo(array('username' => 'carl jobposter', 'password' => 'go123'));
+     $op = new Cross_JobPoster_CareerBuilder();
+     $op->setCredentialName('username');
+     $op->setCredentialPassword('password');
  
      $data = new Model_Jobs();
-     $data->setId(234);
-     $data->setJobtitle('Zend-Programmierer');
-     $data->setLocationTown('Frankfurt');
+     $data->id = 234;
+     $data->jobtitle = 'Zend-Programmierer';
+     $data->locationTown = 'Frankfurt';
  
-     $data->setRecruiterName('Jenny Recruiter');
-     $data->setRecruiterPhone('0123-4567890');
-     $data->setRecruiterEmail('JRecruiter@gotche.de');
+     $data->recruiterName = 'Jenny Recruiter';
+     $data->recruiterPhone = '0123-4567890';
+     $data->recruiterEmail = 'JRecruiter@gotche.de';
  
      $op->setData($data);
  
@@ -108,7 +85,7 @@ For transformation we have chosen XSL for the reason:
 
 ```php
 <?php
-     class MyModelBase_Jobs extends HumanResourceData24_Abstract implements HumanResourceData24_Interface
+     class Cross_JobPoster_Data_Hrsml extends Cross_JobPoster_Data_Abstract implements Cross_JobPoster_Data_Interface
      {
          public function setJobTitle($title) {
               $this->setData('jobtitle', $title);
