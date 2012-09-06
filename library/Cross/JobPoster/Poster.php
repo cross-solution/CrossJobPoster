@@ -28,6 +28,7 @@ class Cross_JobPoster_Poster
     protected $_xlsPath;
     protected $_data;
     protected $_wsdl;
+    protected $_soapFunction;
     
     public function __construct($data = Null) {
         if (isset($data)) {
@@ -45,7 +46,19 @@ class Cross_JobPoster_Poster
     }
     
     protected function _getXlsPath() {
-        return $this->_xlsPath;
+        $default = $this->_xlsPath;
+        if (is_array($this->_xlsPath)) {
+            foreach ($this->_xlsPath as $key => $path) {
+                if ($key == '*') {
+                    $default = $path;
+                }
+                if ($key == $this->_soapFunction) {
+                    $default = $path;
+                    break;
+                }
+            }
+        }
+        return $default;
     }
     
     protected function _setXlsPath($path) {
@@ -106,7 +119,12 @@ class Cross_JobPoster_Poster
                 if (empty($data)) {
                 }
                 else {
-                    $dataXml = $data->asXML();
+                    if (is_array($data)) {
+                        $dataXml = wddx_serialize_value($data);
+                    }
+                    else {
+                        $dataXml = $data->asXML();
+                    }
                     
                     $domdata = new DomDocument();
                     $domdata->loadXML($dataXml);
@@ -120,7 +138,15 @@ class Cross_JobPoster_Poster
         return $erg;
     }
     
+    /**
+     * Aufruf einer SOAP-Funktion
+     * 
+     * @param string $name der SOAP-Funktion
+     * @param type $arguments die Daten für die SOAP-Schnittstelle
+     * @return type 
+     */
     public function __call($name, $arguments) {
+        $this->_soapFunction = $name;
         $client = new Zend_Soap_Client($this->_getWsdl(),
         array(
            'soap_version' => SOAP_1_2, 
@@ -129,6 +155,10 @@ class Cross_JobPoster_Poster
         );
         
         $content = '';
+        if (0 < count($arguments)) {
+            // data are given as argument
+            $this->_data = $arguments[0];
+        }
         if (isset($this->_data)) {
             $content = $this->transformXLS();
         }

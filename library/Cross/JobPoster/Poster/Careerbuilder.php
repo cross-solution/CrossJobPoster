@@ -27,7 +27,10 @@
 class Cross_JobPoster_Poster_Careerbuilder extends Cross_JobPoster_Poster
 {
     protected function init() {
-        $this->_setXlsPath(APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilder.xsl');
+        $this->_setXlsPath(array(
+            '*'             => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilder.xsl',
+            'getJobStatus'  => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilder.xsl'
+            ));
         $this->_setWsdl('http://dpi.careerbuilder.com/WebServices/RealTimeJobPost.asmx?WSDL');
     }
     
@@ -61,6 +64,10 @@ class Cross_JobPoster_Poster_Careerbuilder extends Cross_JobPoster_Poster
         
         }
         return $erg;
+    }
+    
+    public function getJobStatus($key) {
+        return parent::getJobStatus(array('did' => $key));
     }
     
 }
