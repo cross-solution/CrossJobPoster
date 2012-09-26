@@ -28,26 +28,30 @@ class Cross_JobPoster_Poster_Careerbuilder extends Cross_JobPoster_Poster
 {
     protected function init() {
         $this->_setXlsPath(array(
-            '*'             => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilder.xsl',
-            'getJobStatus'  => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilder.xsl'
+            '*'                => array('sTGDID' => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilderJobStatus.xsl'),
+            'ProcessHRXMLJob'  => array('xmlJob' => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilder.xsl'),
+            'GetJobPostStatus' => array('sTGDID' => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilderJobStatus.xsl')
             ));
-        $this->_setWsdl('http://dpi.careerbuilder.com/WebServices/RealTimeJobPost.asmx?WSDL');
-    }
-    
-    protected function _preProcess($data) {
-        return array('xmlJob' => $data);
+        
+        $this->_setWsdl(array(
+            '*'                => 'http://dpi.careerbuilder.com/WebServices/RealTimeJobStatus.asmx?WSDL',
+            'ProcessHRXMLJob'  => 'http://dpi.careerbuilder.com/WebServices/RealTimeJobPost.asmx?WSDL',
+            'GetJobPostStatus' => 'http://dpi.careerbuilder.com/WebServices/RealTimeJobStatus.asmx?WSDL'
+            ));;
     }
     
     protected function _postProcess($name, $data) {
         $erg = array();
-        if ($name == 'ProcessHRXMLJob') {
+        if ($name == 'ProcessHRXMLJob' && !empty($data)) {
             $domErg = new DomDocument();
             $domErg->loadXML($data->ProcessHRXMLJobResult);
             //$action      = $domErg->getElementsByTagName('ActionPerformed');
-            $action      = $domErg->getElementsByTagName('ActionPerformed');
-            $errorNumber = $domErg->getElementsByTagName('ErrorNumber');
-            $message     = $domErg->getElementsByTagName('ErrorMessage');
-            $did         = $domErg->getElementsByTagName('TransactionDID');
+            $action        = $domErg->getElementsByTagName('ActionPerformed');
+            $errorNumber   = $domErg->getElementsByTagName('ErrorNumber');
+            $message       = $domErg->getElementsByTagName('ErrorMessage');
+            $did           = $domErg->getElementsByTagName('TransactionDID');
+            $InternalJobID = $domErg->getElementsByTagName('InternalJobID');
+            $UserJobID     = $domErg->getElementsByTagName('UserJobID');
         
             if (0 < count($action)) {
                 $erg['action'] = $action->item(0)->nodeValue;
@@ -61,13 +65,18 @@ class Cross_JobPoster_Poster_Careerbuilder extends Cross_JobPoster_Poster
             if (0 < count($did)) {
                 $erg['did'] = $did->item(0)->nodeValue;
             }
+            if (0 < count($InternalJobID)) {
+                $erg['InternalJobID'] = $InternalJobID->item(0)->nodeValue;
+            }
+            if (0 < count($UserJobID)) {
+                $erg['UserJobID'] = $UserJobID->item(0)->nodeValue;
+            }
         
         }
+        elseif ($name == 'GetJobPostStatus') {
+            $erg = (array) $data;
+        }
         return $erg;
-    }
-    
-    public function getJobStatus($key) {
-        return parent::getJobStatus(array('did' => $key));
     }
     
 }

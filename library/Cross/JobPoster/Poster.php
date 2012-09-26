@@ -11,7 +11,7 @@
  * @package   Cross_JobPoster
  * @copyright  Copyright (c) 2012 Cross Solution. (http://www.cross-solution.de)
  * @license   New BSD License
- * @author Mathias Weitz (mweitz@cross-solution.de)
+ * @author Mathias Weitz (weitz@cross-solution.de)
  */
 
 /**
@@ -29,11 +29,13 @@ class Cross_JobPoster_Poster
     protected $_data;
     protected $_wsdl;
     protected $_soapFunction;
+    protected $_contentArray;
     
     public function __construct($data = Null) {
         if (isset($data)) {
             $this->_data = $data;
         }
+        $this->_contentArray = array();
         $this->init();
         return $this;
     }
@@ -45,20 +47,31 @@ class Cross_JobPoster_Poster
     protected function init() {
     }
     
-    protected function _getXlsPath() {
-        $default = $this->_xlsPath;
-        if (is_array($this->_xlsPath)) {
-            foreach ($this->_xlsPath as $key => $path) {
+    private function _getByNameMatch($array, $searchKey = Null) {
+        $result = $array;
+        if (is_array($array) && 1 < count($array)) {
+            if (!isset($key) && isset($this->_soapFunction)) {
+                $searchKey = $this->_soapFunction;
+            }
+            foreach ($array as $key => $value) {
                 if ($key == '*') {
-                    $default = $path;
+                    $result = $value;
                 }
-                if ($key == $this->_soapFunction) {
-                    $default = $path;
+                if ($key == $searchKey) {
+                    $result = $value;
                     break;
                 }
             }
         }
-        return $default;
+        return $result;
+    }
+    
+    protected function _getXlsPath() {
+        $xsl = $this->_getByNameMatch($this->_xlsPath);
+        if (!is_array($xsl)) {
+            $xsl = array($xsl);
+        }
+        return $xsl;
     }
     
     protected function _setXlsPath($path) {
@@ -67,7 +80,7 @@ class Cross_JobPoster_Poster
     }
     
     protected function _getWsdl() {
-        return $this->_wsdl;
+        return $this->_getByNameMatch($this->_wsdl);
     }
     
     protected function _setWsdl($path) {
@@ -76,6 +89,7 @@ class Cross_JobPoster_Poster
     }
     
     protected function _getData() {
+        $this->_data->preprocessData();
         return $this->_data;
     }
     
@@ -95,46 +109,39 @@ class Cross_JobPoster_Poster
         return array('raw' => $erg);
     }
     
-    /**
-     * the content send to the portal is just coming out of the transforming
-     * i.e. a XML-String for a SOAP
-     * sometimes this parameter has to have an associative key
-     * here you can put this XML-String into a parameter-array for the SOAP-Call
-     */
-    protected function _preProcess($content) {
-        return array($content);
-    }
-    
-    
     public function transformXLS() {
-        $erg = Null;
-        $realpath = realpath(dirname($this->_getXlsPath())) . '/' . basename($this->_getXlsPath());
-        if ($realpath) {
-            if (is_readable($realpath)) {
+        $erg = array();
+        $xlsPathes = $this->_getXlsPath();
+        foreach ($xlsPathes as $key => $xlsPath) {
+            $realpath = realpath(dirname($xlsPath)) . '/' . basename($xlsPath);
+            if ($realpath) {
+                if (is_readable($realpath)) {
 
-                $domdocument = new DomDocument();
-                $domdocument->load($realpath);
-                $t = $domdocument->saveXML();
-                $data = $this->_getData();
-                if (empty($data)) {
-                }
-                else {
-                    if (is_array($data)) {
-                        $dataXml = wddx_serialize_value($data);
+                    $domdocument = new DomDocument();
+                    $domdocument->load($realpath);
+                    $t = $domdocument->saveXML();
+                    $data = $this->_getData();
+                    if (empty($data)) {
                     }
                     else {
-                        $dataXml = $data->asXML();
-                    }
-                    
-                    $domdata = new DomDocument();
-                    $domdata->loadXML($dataXml);
+                        if (is_array($data)) {
+                            $dataXml = wddx_serialize_value($data);
+                        }
+                        else {
+                            $dataXml = $data->asXML();
+                        }
 
-                    $xslt = new XSLTProcessor();
-                    $xslt->importStylesheet($domdocument);
-                    $erg = $xslt->transformToXml($domdata);
+                        $domdata = new DomDocument();
+                        $domdata->loadXML($dataXml);
+
+                        $xslt = new XSLTProcessor();
+                        $xslt->importStylesheet($domdocument);
+                        $erg[$key] = $xslt->transformToXml($domdata);
+                        //echo htmlentities($erg[$key]);
+                    }
                 }
-            }
-        }        
+            }    
+        }
         return $erg;
     }
     
@@ -147,11 +154,13 @@ class Cross_JobPoster_Poster
      */
     public function __call($name, $arguments) {
         $this->_soapFunction = $name;
-        $client = new Zend_Soap_Client($this->_getWsdl(),
-        array(
+        $soapOptions = array(
            'soap_version' => SOAP_1_2, 
             'encoding' => 'UTF-8',
-            )
+            );
+       
+        $client = new Zend_Soap_Client($this->_getWsdl(),
+                $soapOptions
         );
         
         $content = '';
@@ -162,9 +171,14 @@ class Cross_JobPoster_Poster
         if (isset($this->_data)) {
             $content = $this->transformXLS();
         }
-        $contentArray = $this->_preProcess($content);
-        $erg = $client->$name($contentArray);
+        
+        //Zend_Debug::dump($content);
+        
+        $erg = $client->$name($content);
+        
+        //Zend_Debug::dump($erg);
         $erg = $this->_postProcess($name, $erg);
+        $this->_soapFunction = Null;
         return $erg;
 
     }

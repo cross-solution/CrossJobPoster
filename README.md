@@ -2,13 +2,20 @@
 
 ## Status
 
-*pre-alpha*
+*alpha*
 
 ## Overview
 
 PHP implementation of various interfaces to post job offers to jobportals like careerbuilder, monster or FAZjob.NET
 
-##References
+The services of this library are:
+* providing a consistent way to store data for an API
+
+The advantages of this library are:
+* simplification for the application-code
+* boiling down the migration to xsl-files, which can be shared easely
+
+## References
 
 * [hr-xml.org](http://hr-xml.org "HR-XML")
 * [Dokumentation Career](http://dpi.careerbuilder.com/Site/Index.aspx "Careerbuilder Specs")
@@ -30,16 +37,17 @@ PHP implementation of various interfaces to post job offers to jobportals like c
 ### Theory of Operation
 
 A data-object should contain all the information about a job.
-The data-object get assigned to a class for transforming the data for Transfer to a portal.
+A XSL-Stylesheet transforms the data-object into a xml or json-file.
+The poster-object sends the file to a portal.
 
 ### Class Index
 
-* Cross_JobPoster_CareerBuilder
-* Cross_JobPoster_Monster
-* Cross_JobPoster_Abstract
-* Cross_JobPoster_Data_Hrxml
+* Cross_JobPoster_Poster_CareerBuilder
+* Cross_JobPoster_Poster_Monster
+* Cross_JobPoster_Poster
+* Cross_JobPoster_Data_Careerbuilder
+* Cross_JobPoster_Data_Monster
 * Cross_JobPoster_Data_Abstract
-* Cross_JobPoster_Data_Interface
 
 ### Use Cases
 
@@ -54,57 +62,69 @@ The data-object get assigned to a class for transforming the data for Transfer t
 
 ```php
 <?php
-
-     $op = new Cross_JobPoster_CareerBuilder();
-     $op->setCredentialName('username');
-     $op->setCredentialPassword('password');
+     $data = new Cross_JobPoster_Data_Careerbuilder();
+     $data->setAction('ADD');
+     $data->setStatus('Active');
+     $data->setTitle('Zend-Programmierer');
+     $data->setJoblocationtown('Frankfurt');
  
-     $data = new Model_Jobs();
-     $data->id = 234;
-     $data->jobtitle = 'Zend-Programmierer';
-     $data->locationTown = 'Frankfurt';
+     $data->setRecruitername('Jenny Recruiter');
+     $data->setRecruiterphone('0123-4567890');
+     $data->setRecruiteremail('JRecruiter@gotche.de');
  
-     $data->recruiterName = 'Jenny Recruiter';
-     $data->recruiterPhone = '0123-4567890';
-     $data->recruiterEmail = 'JRecruiter@gotche.de';
- 
-     $op->setData($data);
- 
-     // the following command is determined by the API of the portal
-     $op->processHRXMLNew();
- 
-     // the following command is determined by the API of the portal
-     $info = $op->getResponse();
+     // Sending the data-object to the API of the portal
+     $op = new Cross_JobPoster_Poster_CareerBuilder();
+     $op->ProcessHRXMLJob($data);
 ```
  
 #### class for preserving data:
 
 * basically this class is a container for all the data needed in the poster-protocol
-* what is really needed are just the getter-method, because they will provide an interface for all the data, which is used in the poster-class
-* the intention is to write own classes, which implements the getter-methods directly from the database
+* this class can be extended for completing the data before transforming them by the XSL
+** some date may contain individual values (like industry types or qualification), a direct transfer by code-based value-mapping proved to be more convenient than databases
+** a derived class may complete some data from a database or another source
+
+For every stored data, there can be a method for transforming this data, if the data is stored as 'setFoo' in the application, the data is preprocessed with the method 'preFoo' in the derived class.
 
 ```php
 <?php
-     class Cross_JobPoster_Data_Hrsml extends Cross_JobPoster_Data_Abstract implements Cross_JobPoster_Data_Interface
+     class Cross_JobPoster_Data_Careerbuilder extends Cross_JobPoster_Data
      {
-         public function setJobTitle($title) {
-              $this->setData('jobtitle', $title);
+         protected function preAction($action) {
+              return strtoupper($action);
          }
-
-         public function getJobInfo() {
-             return $this->getData('jobinfo');
-         }
-
-	// the following method is inherited and provides a standarized datascheme
-	public function getXML() {
-		$data = new StdClass;
-		// this getter either provides stored data, 
-		// or fetch data from a database.
-		// in the second case you can expect this method coming from a derived class
-		$data->PositionTitle = $this->getPositionTitle();
-		xmlString = wddx_serialize_vars("job");
-	}
      }
+ ```
+#### XSL
+
+The input data for the XSL is a XML based on a WDDL-serialisation.
+
+#### class for posting the data:
+
+The requirements do make it most likely necessary to deal with several functions with more than on parameter and different WSDL for every function.
+In the Poster-Class there is a method, which is calles immediatly after creating the object which will map the functions to xsl-file and a wsdl.
+The asteriks '*' is taken as default if nothing else matches.
+For the XLS-Pathes you can use keys, which is sometimes required in the SOAP-Functions.
+
+```php
+<?php
+class Cross_JobPoster_Poster_Careerbuilder extends Cross_JobPoster_Poster
+{
+    protected function init() {
+        $this->_setXlsPath(array(
+            '*'                => array('sTGDID' => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilderJobStatus.xsl'),
+            'ProcessHRXMLJob'  => array('xmlJob' => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilder.xsl'),
+            'GetJobPostStatus' => array('sTGDID' => APPLICATION_PATH . '/../library/Cross/JobPoster/styleSheets/careerbuilderJobStatus.xsl')
+            ));
+        
+        $this->_setWsdl(array(
+            '*'                => 'http://dpi.careerbuilder.com/WebServices/RealTimeJobStatus.asmx?WSDL',
+            'ProcessHRXMLJob'  => 'http://dpi.careerbuilder.com/WebServices/RealTimeJobPost.asmx?WSDL',
+            'GetJobPostStatus' => 'http://dpi.careerbuilder.com/WebServices/RealTimeJobStatus.asmx?WSDL'
+            ));;
+    }
+    
+}
  ```
 
 ### Class Skeletons

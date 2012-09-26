@@ -70,6 +70,15 @@ abstract class Cross_JobPoster_Data_Abstract
         return $erg;
     }
     
+    public function preprocessData() {
+        foreach ($this->_data as $key => &$value) {
+            $methodName = 'pre' . ucfirst($key);
+            if (method_exists($this, $methodName)) {
+                $value = call_user_func(array(&$this, $methodName), $value);
+            }
+        }
+    }
+    
     public function asXML() {
         $asArray = $this->asArray();
         $this->complete(&$asArray);

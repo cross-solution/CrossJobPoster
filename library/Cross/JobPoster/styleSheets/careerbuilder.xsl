@@ -12,11 +12,14 @@
 
 <!-- <xsl:template match="struct/var[@name='job']"> -->
 <xsl:template match="struct">
+    
   <PositionRecordInfo>
     <Status><xsl:value-of select="var[@name='status']/string" /></Status>
-    <Id>
-      <IdValue><xsl:value-of select="var[@name='id']/string" /></IdValue>
-    </Id>
+    <xsl:if test="0 &lt; string-length(var[@name='id']/string)">
+        <Id>
+            <IdValue><xsl:value-of select="var[@name='id']/string" /></IdValue>
+        </Id>
+    </xsl:if>
   </PositionRecordInfo>
   <PositionProfile>
     <PositionDetail>
@@ -41,19 +44,54 @@
         </Telephone>
       </ApplicationMethod>
     </HowToApply>
+      <FormattedPositionDescription>
+        <Name>Description</Name>
+        <Value>
+            <!-- <xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text> -->
+            <xsl:value-of select="var[@name='description']/string" />
+            <!-- <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text> -->
+        </Value>
+      </FormattedPositionDescription>
+      <FormattedPositionDescription>
+            <Name>Requirements</Name>
+            <Value>
+            <!-- <xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text> -->
+            <xsl:value-of select="var[@name='requirements']/string" />
+            <!-- <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text> -->
+            </Value>
+        </FormattedPositionDescription>
   </PositionProfile>
   <UserArea>
      <CareerBuilder>
-        <Field name="CBPosterEmail">
-          <xsl:attribute name="value"><xsl:value-of select="var[@name='posteremail']/string" /></xsl:attribute>
-        </Field>
-        <Field name="CBPosterPassword">
-          <xsl:attribute name="value"><xsl:value-of select="var[@name='posterpassword']/string" /></xsl:attribute>
+         <xsl:if test="0 &lt; string-length(var[@name='posteremail']/string) and 0 &lt; string-length(var[@name='posterpassword']/string)">
+            <Field name="CBPosterEmail">
+                <xsl:attribute name="value"><xsl:value-of select="var[@name='posteremail']/string" /></xsl:attribute>
+            </Field>
+            <Field name="CBPosterPassword">
+                <xsl:attribute name="value"><xsl:value-of select="var[@name='posterpassword']/string" /></xsl:attribute>
+            </Field>
+        </xsl:if>
+        <xsl:if test="0 &lt; string-length(var[@name='vendorid']/string)">
+            <Field name="CBVendorID">
+                <xsl:attribute name="value"><xsl:value-of select="var[@name='vendorid']/string" /></xsl:attribute>
+            </Field>
+        </xsl:if>
+        <Field name="CBOrigin">
+          <xsl:attribute name="value"><xsl:value-of select="var[@name='origin']/string" /></xsl:attribute>
         </Field>
         <Field name="CBJobTypeCode">
           <xsl:attribute name="value"><xsl:value-of select="var[@name='posterjobtype']/string" /></xsl:attribute>
         </Field>
+        <Field name="CBAction">
+          <xsl:attribute name="value"><xsl:value-of select="var[@name='action']/string" /></xsl:attribute>
+        </Field>
+        <xsl:if test="0 &lt; string-length(var[@name='userjobid']/string)">
+            <Field name="CBUserJobID">
+                <xsl:attribute name="value"><xsl:value-of select="var[@name='userjobid']/string" /></xsl:attribute>
+            </Field>
+        </xsl:if>
      </CareerBuilder>
   </UserArea>
+  
 </xsl:template>
 </xsl:stylesheet>
