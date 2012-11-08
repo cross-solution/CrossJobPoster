@@ -23,8 +23,9 @@
  * @license   New BSD License
  */
 
-require_once 'Data/Abstract.php';
-
-class Cross_JobPoster_Data extends Cross_JobPoster_Data_Abstract
+class Cross_JobPoster_Data_Careerbuilder extends Cross_JobPoster_Data_Abstract
 {   
+    protected function preDescriptionOld($value) {
+        return htmlentities($value);
+    }
 }
